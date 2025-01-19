@@ -1,0 +1,104 @@
+import random
+
+# Define card values and suits
+suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+value_map = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+             'J': 10, 'Q': 10, 'K': 10, 'A': 11}  # Ace can also be 1, we'll handle that later
+
+# Function to create a deck of cards
+def create_deck():
+    deck = []
+    for suit in suits:
+        for value in values:
+            deck.append((value, suit))
+    random.shuffle(deck)
+    return deck
+
+# Function to calculate hand value, handling Aces as 11 or 1
+def calculate_hand_value(hand):
+    value = sum([value_map[card[0]] for card in hand])
+    aces = sum([1 for card in hand if card[0] == 'A'])
+    
+    while value > 21 and aces:
+        value -= 10
+        aces -= 1
+    return value
+
+# Function to print cards
+def print_hand(hand, hidden=False):
+    if hidden:
+        print("[Hidden card] ", hand[1])
+    else:
+        for card in hand:
+            print(card[0] + " of " + card[1])
+
+# Function to play a round of Blackjack
+def blackjack():
+    deck = create_deck()
+
+    # Deal two cards to player and dealer
+    player_hand = [deck.pop(), deck.pop()]
+    dealer_hand = [deck.pop(), deck.pop()]
+
+    print("Dealer's Hand:")
+    print_hand(dealer_hand, hidden=True)
+
+    print("\nYour Hand:")
+    print_hand(player_hand)
+    print(f"Your total: {calculate_hand_value(player_hand)}")
+
+    # Player's turn
+    while calculate_hand_value(player_hand) < 21:
+        move = input("\nDo you want to [H]it or [S]tand? ").lower()
+        if move == 'h':
+            player_hand.append(deck.pop())
+            print("\nYour Hand:")
+            print_hand(player_hand)
+            print(f"Your total: {calculate_hand_value(player_hand)}")
+        elif move == 's':
+            break
+
+    # Check if player busts
+    if calculate_hand_value(player_hand) > 21:
+        print("\nYou busted! Dealer wins.")
+        return
+
+    # Dealer's turn
+    print("\nDealer's Hand:")
+    print_hand(dealer_hand)
+    print(f"Dealer's total: {calculate_hand_value(dealer_hand)}")
+
+    while calculate_hand_value(dealer_hand) < 17:
+        print("\nDealer hits.")
+        dealer_hand.append(deck.pop())
+        print_hand(dealer_hand)
+        print(f"Dealer's total: {calculate_hand_value(dealer_hand)}")
+
+    # Check if dealer busts
+    if calculate_hand_value(dealer_hand) > 21:
+        print("\nDealer busted! You win.")
+        return
+
+    # Determine winner
+    player_total = calculate_hand_value(player_hand)
+    dealer_total = calculate_hand_value(dealer_hand)
+
+    print("\nFinal Results:")
+    print(f"Your total: {player_total}")
+    print(f"Dealer's total: {dealer_total}")
+
+    if player_total > dealer_total:
+        print("You win!")
+    elif player_total < dealer_total:
+        print("Dealer wins!")
+    else:
+        print("It's a tie!")
+
+# Run the game
+if __name__ == "__main__":
+    while True:
+        blackjack()
+        play_again = input("\nDo you want to play again? [Y/N] ").lower()
+        if play_again != 'y':
+            break
